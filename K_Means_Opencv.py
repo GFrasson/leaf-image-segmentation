@@ -31,9 +31,9 @@ class K_Means_Opencv:
         segmented_data = centers[labels.flatten()]
         return segmented_data.reshape(shape)
 
-    def __get_threshold_image(self, labels):
+    def __get_threshold_image(self, centers, labels):
         # Intensidades da imagem binária
-        binary_intensity = np.array([0, 255])
+        binary_intensity = np.array([255, 0]) if centers[0][0] < centers[1][0] else np.array([0, 255])
         
         # Shape da imagem original com apenas um canal de cor
         shape = (self.original_image_shape[0], self.original_image_shape[1], 1)
@@ -60,7 +60,8 @@ class K_Means_Opencv:
         retval, labels, centers = self.__kmeans_clustering()
 
         # Conversão do resultado para imagens
-        segmented_image = self.__get_segmented_image(centers, labels)
-        threshold_image = self.__get_threshold_image(labels)
+        segmented_image = None
+        # segmented_image = self.__get_segmented_image(centers, labels)
+        threshold_image = self.__get_threshold_image(centers, labels)
 
         return segmented_image, threshold_image
