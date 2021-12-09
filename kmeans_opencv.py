@@ -1,5 +1,6 @@
 from os import listdir, path
 import cv2 as cv
+import numpy as np
 from K_Means_Opencv import K_Means_Opencv
 
 
@@ -30,7 +31,7 @@ if __name__ == '__main__':
         
         # Estamos exportando somente essa imagem em preto e branco
         # cv.imwrite(path.join(path.curdir, 'threshold_images', subdir_path, filename + '_mask' + '_threshold' + f'.{extension}'), threshold_image)
-        cv.imwrite(path.join(path.curdir, 'threshold_images', subdir_path, filename + '_mask' + f'.{extension}'), threshold_image)
+        cv.imwrite(path.join(path.curdir, 'threshold_images', subdir_path, filename + '_mask' + '.png'), threshold_image)
 
         progress += 1
         print(f'Progresso: {progress}/{len(files)} imagens')
