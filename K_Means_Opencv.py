@@ -60,8 +60,7 @@ class K_Means_Opencv:
         retval, labels, centers = self.__kmeans_clustering()
 
         # Conversão do resultado para imagens
-        segmented_image = None
         # segmented_image = self.__get_segmented_image(centers, labels)
         threshold_image = self.__get_threshold_image(centers, labels)
 
-        return segmented_image, threshold_image
+        return threshold_image

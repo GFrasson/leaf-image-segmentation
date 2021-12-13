@@ -4,3 +4,4 @@ __pycache__/
 images/
 segmented_images/
 threshold_images/
+contoured_images/

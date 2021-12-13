@@ -4,13 +4,38 @@ import numpy as np
 from K_Means_Opencv import K_Means_Opencv
 
 
+def draw_countours(image, contornos, color: tuple = (0, 0, 255)):
+    for contorno in contornos:
+        for point in contorno:
+            pts = []
+
+            for point2 in point:
+                try:
+                    x = int(point2[0])
+                    y = int(point2[1])
+                except:
+                    x = int(point2[0][0])
+                    y = int(point2[0][1])
+
+                    pts.append([x, y])
+
+            pts = np.array(pts)
+            cv.polylines(image, [pts], True, color, 10, cv.LINE_AA)
+
+    return image
+
+
 if __name__ == '__main__':
     # Instanciando o método utilizado
     kmeans_opencv = K_Means_Opencv(k_clusters=2)
 
     # Encontrando arquivos da pasta do caminho escolhido
-    subdir_path = path.join('MotoC', 'Eucalyptus')
-    dir_path = path.join(path.curdir, 'images', subdir_path)
+    image_dir_path = path.join(path.curdir, 'images')
+    thresh_dir_path = path.join(path.curdir, 'threshold_images')
+    contoured_image_dir_path = path.join(path.curdir, 'contoured_images')
+    subdir_path = path.join('MotoC', 'Coffee')
+
+    dir_path = path.join(image_dir_path, subdir_path)
     files = [filename for filename in listdir(dir_path) if path.isfile(path.join(dir_path, filename))]
 
     # Percorrendo os arquivos
@@ -23,15 +48,24 @@ if __name__ == '__main__':
         image = cv.imread(full_path)
 
         # Aplicação do método de segmentação
-        segmented_image, threshold_image = kmeans_opencv.image_segmentation(image)
+        threshold_image = kmeans_opencv.image_segmentation(image)
 
-        # Exportando as imagens geradas
-        # Não estamos exportando mais essa segmented_image pois é colorida
-        # cv.imwrite(path.join(path.curdir, 'segmented_images', subdir_path, filename + '_mask' + f'.{extension}'), segmented_image)
-        
-        # Estamos exportando somente essa imagem em preto e branco
-        # cv.imwrite(path.join(path.curdir, 'threshold_images', subdir_path, filename + '_mask' + '_threshold' + f'.{extension}'), threshold_image)
-        cv.imwrite(path.join(path.curdir, 'threshold_images', subdir_path, filename + '_mask' + '.png'), threshold_image)
+        # Exportando imagem preto e branco
+        cv.imwrite(path.join(thresh_dir_path, subdir_path, filename + '_mask' + '.png'), threshold_image)
+
+        # Convertendo a imagem para inteiro 8-bit
+        threshold_image = np.uint8(threshold_image)
+
+        # gray_image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+
+        # Encontrando contornos
+        contours = cv.findContours(threshold_image, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
+
+        # Desenhando contornos na imagem original
+        contoured_image = draw_countours(image, contours)
+
+        # Exportando imagem contornada
+        cv.imwrite(path.join(contoured_image_dir_path, subdir_path, filename + '_contour' + '.png'), contoured_image)
 
         progress += 1
         print(f'Progresso: {progress}/{len(files)} imagens')
