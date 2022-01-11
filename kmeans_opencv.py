@@ -5,6 +5,9 @@ from K_Means_Opencv import K_Means_Opencv
 
 
 def draw_countours(image, contornos, color: tuple = (0, 0, 255)):
+    if len(contornos[0]) == 0:
+        return image
+    
     for contorno in contornos:
         for point in contorno:
             pts = []
