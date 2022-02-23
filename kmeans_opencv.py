@@ -23,7 +23,7 @@ def draw_countours(image, contornos, color: tuple = (0, 0, 255)):
                     pts.append([x, y])
 
             pts = np.array(pts)
-            cv.polylines(image, [pts], True, color, 10, cv.LINE_AA)
+            cv.polylines(image, [pts], True, color, 2, cv.LINE_AA)
 
     return image
 
