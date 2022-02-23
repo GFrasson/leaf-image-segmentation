@@ -22,7 +22,7 @@ def draw_countours(image, contornos, color: tuple = (0, 0, 255)):
                     pts.append([x, y])
 
             pts = np.array(pts)
-            cv.polylines(image, [pts], True, color, 10, cv.LINE_AA)
+            cv.polylines(image, [pts], True, color, 2, cv.LINE_AA)
 
     return image
 
@@ -42,7 +42,7 @@ if __name__ == '__main__':
 
             # Leitura da imagem
             thresh = cv.imread(path.join(thresh_dir_path, subdir_path, image_name + '_mask.png'), cv.IMREAD_UNCHANGED)
-            image = cv.imread(path.join(image_dir_path, subdir_path, image_name + '.jpg'), cv.IMREAD_UNCHANGED)
+            image = cv.imread(path.join(image_dir_path, subdir_path, image_name + '.jpg'))
 
             # Encontrando contornos
             contours = cv.findContours(thresh, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
