@@ -2,30 +2,7 @@ from os import listdir, path
 import cv2 as cv
 import numpy as np
 from K_Means_Opencv import K_Means_Opencv
-
-
-def draw_countours(image, contornos, color: tuple = (0, 0, 255)):
-    if len(contornos[0]) == 0:
-        return image
-    
-    for contorno in contornos:
-        for point in contorno:
-            pts = []
-
-            for point2 in point:
-                try:
-                    x = int(point2[0])
-                    y = int(point2[1])
-                except:
-                    x = int(point2[0][0])
-                    y = int(point2[0][1])
-
-                    pts.append([x, y])
-
-            pts = np.array(pts)
-            cv.polylines(image, [pts], True, color, 2, cv.LINE_AA)
-
-    return image
+from draw_contours_polylines import draw_contours_polylines
 
 
 if __name__ == '__main__':
@@ -65,7 +42,7 @@ if __name__ == '__main__':
         contours = cv.findContours(threshold_image, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
 
         # Desenhando contornos na imagem original
-        contoured_image = draw_countours(image, contours)
+        contoured_image = draw_contours_polylines(image, contours)
 
         # Exportando imagem contornada
         cv.imwrite(path.join(contoured_image_dir_path, subdir_path, filename + '_contour' + '.png'), contoured_image)
