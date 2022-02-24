@@ -1,4 +1,5 @@
 from genericpath import isdir
+from time import sleep
 import cv2 as cv
 import numpy as np
 from os import path, walk
@@ -34,17 +35,42 @@ class Paint_Event_Handler():
         self.original_added_image = added_image
         self.color = color
         self.painting = False
+        self.rectangle_size = 0
+        self.x_length = self.original_image.shape[1]
+        self.y_length = self.original_image.shape[0]
 
         cv.namedWindow(SEGMENTATION_IMAGE_WINDOW_NAME, cv.WINDOW_NORMAL)
         cv.setMouseCallback(SEGMENTATION_IMAGE_WINDOW_NAME, self.paint_on_mouse_move)
 
     def paint_on_mouse_move(self, event, x, y, flags, parameters):
-        if event == cv.EVENT_LBUTTONDBLCLK:
+        if flags == cv.EVENT_FLAG_SHIFTKEY and self.rectangle_size < 10:
+            self.rectangle_size += 1
+            sleep(0.2)
+
+        elif flags == cv.EVENT_FLAG_CTRLKEY and self.rectangle_size > 0:
+            self.rectangle_size -= 1
+            sleep(0.2)
+
+        elif event == cv.EVENT_LBUTTONDBLCLK:
             self.painting = not self.painting
             
         if self.painting:
-            self.original_image[y, x] = self.color
-            self.original_added_image[y, x] = self.color
+            if self.rectangle_size > 0:
+                starting_point = (
+                    max(0, x - self.rectangle_size), 
+                    max(0, y - self.rectangle_size)
+                )
+                end_point = (
+                    min(self.x_length, x + self.rectangle_size), 
+                    min(self.y_length, y + self.rectangle_size)
+                )
+
+                cv.rectangle(self.original_image, starting_point, end_point, self.color, -1, cv.LINE_8)
+                cv.rectangle(self.original_added_image, starting_point, end_point, self.color, -1, cv.LINE_8)
+            else:
+                self.original_image[y, x] = self.color
+                self.original_added_image[y, x] = self.color
+            
             cv.imshow(SEGMENTATION_IMAGE_WINDOW_NAME, self.original_added_image)
 
     def show_image(self):
@@ -290,6 +316,8 @@ def square_painting(original_image, threshold_image, contour_thickness):
 
 
 def free_painting(original_image, threshold_image, gray_image, contour_thickness):
+    update_contoured_image_window(original_image, threshold_image, contour_thickness)
+
     while True:
         threshold_image_copy = np.copy(threshold_image)
 
@@ -315,6 +343,8 @@ def free_painting(original_image, threshold_image, gray_image, contour_thickness
         color = Colors.BLACK.value if key == Keyboard.SPACEBAR.value else Colors.WHITE.value
 
         print('Clique duas vezes para ativar ou desativar o pincel')
+        print('Pressione (ou segure) shift para aumentar o pincel')
+        print('Pressione (ou segure) ctrl para diminuir o pincel')
         print_options({
             'Espaço': 'Finalizar pintura',
         }, 'Pintando pixels')
@@ -324,7 +354,7 @@ def free_painting(original_image, threshold_image, gray_image, contour_thickness
 
         while True:
             cv.imshow(SEGMENTATION_IMAGE_WINDOW_NAME, paint_event_handler.show_image())
-            key = cv.waitKey(1)
+            key = cv.waitKey(0)
 
             if key == Keyboard.SPACEBAR.value:
                 break
@@ -360,14 +390,6 @@ if __name__ == '__main__':
     if not isdir(image_dir_path) or not isdir(threshold_image_dir_path):
         raise FileNotFoundError('Pasta nao foi encontrada')
 
-    contour_thickness = input('Digite a espessura dos contornos que serão desenhados na imagem (padrao: 1) (max: 10): ')
-    
-    try:
-        contour_thickness = int(contour_thickness)
-        contour_thickness = min(contour_thickness, 10)
-    except ValueError:
-        contour_thickness = 1
-
     try:
         for root, dirs, files in walk(threshold_image_dir_path):
             print('*' * 45)
@@ -402,23 +424,23 @@ if __name__ == '__main__':
                     # Convertendo imagem original para escala de cinza
                     gray_image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
                     
-                    contoured_image = get_contoured_image(image, threshold_image)
+                    contoured_image = get_contoured_image(image, threshold_image, thickness=10)
                     display_image(contoured_image, CONTOURED_IMAGE_WINDOW_NAME, False, False)
 
                     # Pintando regiões da imagem
-                    threshold_image = region_painting(image, threshold_image, contour_thickness)
+                    threshold_image = region_painting(image, threshold_image, contour_thickness=10)
 
                     # Pintando o quadrado
-                    threshold_image = square_painting(image, threshold_image, contour_thickness)
+                    threshold_image = square_painting(image, threshold_image, contour_thickness=10)
 
                     # Pintando pixels
-                    threshold_image = free_painting(image, threshold_image, gray_image, contour_thickness)
+                    threshold_image = free_painting(image, threshold_image, gray_image, contour_thickness=1)
                     
                     # Exportando a imagem
                     cv.imwrite(path.join(path.curdir, threshold_image_dir_path, threshold_image_name), threshold_image)
 
                 except Exception as error:
-                    print("Não foi possível ler a imagem original")
+                    print(error)
 
     except ValueError as error:
         print(error)
