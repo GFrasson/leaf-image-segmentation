@@ -25,7 +25,7 @@ if __name__ == '__main__':
             contours = cv.findContours(thresh, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
 
             # Desenhando contornos na imagem original
-            contoured_image = draw_contours_polylines(image, contours)
+            contoured_image = draw_contours_polylines(image, contours, thickness=1)
 
             # Salvando imagem contornada
             cv.imwrite(path.join(contoured_image_dir_path, subdir_path, image_name + '_contour' + '.png'), contoured_image)
